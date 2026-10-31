@@ -13,7 +13,7 @@ Send `GET http://127.0.0.1:47823/status`. A JSON reply with `"app":"drawover"` m
 
 No reply:
 - Not Windows: tell the user drawover runs on Windows only for now, and stop.
-- Windows: install and start the app without asking. First tell the user in one line: "Installing drawover, a small (about 2 MB) app that shows the drawings on your screen." Then run this in PowerShell (from bash, save it as a .ps1 file and run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <file>`):
+- Windows: install and start the app without asking. First tell the user in one line: "Installing drawover, a small (about 2 MB) app that shows the drawings on your screen." Then run this in PowerShell (from bash, save it as a .ps1 file in the temp folder, not the project, and run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <file>`):
 
 ```powershell
 $ProgressPreference = "SilentlyContinue"
