@@ -22,13 +22,13 @@ $drawover how does a car engine work?
 
 ## The app
 
-The first time you use the skill, it installs drawover, a small (about 2 MB) Windows app made with [Tauri](https://tauri.app). It is a see-through layer over your screen that shows the drawings.
+The first time you use the skill, it installs drawover, a small app made with [Tauri](https://tauri.app) for Windows and macOS. It is a see-through layer over your screen that shows the drawings.
 
 - It only accepts drawings from programs on your own computer.
-- It starts with Windows. Turn this off from its tray icon.
-- Remove it from Settings > Apps > drawover.
+- It starts when you log in. Turn this off from its icon in the taskbar tray (Windows) or menu bar (macOS).
+- Remove it on Windows from Settings > Apps > drawover. On macOS, quit it from the menu bar icon, then delete `drawover` from the `Applications` folder in your home folder.
 
-drawover runs on Windows only for now.
+drawover runs on Windows and macOS (Apple Silicon and Intel). macOS support is new.
 
 ## License
 

@@ -1,6 +1,6 @@
 ---
 name: drawover
-description: Explain anything by drawing it live on the user's screen with the drawover app (Windows) - 3D models built part by part with labels and motion, or hand-drawn whiteboard diagrams. Use when the user invokes drawover, or asks you to draw, show, sketch or visualise how something works on their screen.
+description: Explain anything by drawing it live on the user's screen with the drawover app (Windows and macOS) - 3D models built part by part with labels and motion, or hand-drawn whiteboard diagrams. Use when the user invokes drawover, or asks you to draw, show, sketch or visualise how something works on their screen.
 ---
 
 # drawover
@@ -12,8 +12,10 @@ drawover is a see-through layer over the user's screen. You send it drawing line
 Send `GET http://127.0.0.1:47823/status`. A JSON reply with `"app":"drawover"` means it is ready; go to step 2.
 
 No reply:
-- Not Windows: tell the user drawover runs on Windows only for now, and stop.
-- Windows: install and start the app without asking. First tell the user in one line: "Installing drawover, a small (about 2 MB) app that shows the drawings on your screen." Then run this in PowerShell (from bash, save it as a .ps1 file in the temp folder, not the project, and run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <file>`):
+- Not Windows or macOS: tell the user drawover runs on Windows and macOS only for now, and stop.
+- Windows or macOS: install and start the app without asking. First tell the user in one line: "Installing drawover, a small (2-6 MB) app that shows the drawings on your screen." Then run the script for their system. It installs only if the app is missing, starts it outside your shell (so it keeps running after the command ends), and prints the status reply once the app is up.
+
+Windows, in PowerShell (from bash, save it as a .ps1 file in the temp folder, not the project, and run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <file>`):
 
 ```powershell
 $ProgressPreference = "SilentlyContinue"
@@ -29,8 +31,23 @@ explorer.exe $exe
 for ($i = 0; $i -lt 20; $i++) { try { Invoke-RestMethod http://127.0.0.1:47823/status; break } catch { Start-Sleep 1 } }
 ```
 
-`explorer.exe` starts the app outside your shell, so it keeps running after the command ends. The script prints the status reply once the app is up. No reply after 20 seconds: tell the user drawover did not start, and stop.
+macOS, in bash or zsh:
 
+```bash
+app="$HOME/Applications/drawover.app"
+if [ ! -d "$app" ]; then
+  zip="${TMPDIR:-/tmp}/drawover-macos.zip"
+  curl -fsSL -o "$zip" https://github.com/mesomya/drawover-skill/releases/latest/download/drawover-macos.zip
+  mkdir -p "$HOME/Applications"
+  ditto -x -k "$zip" "$HOME/Applications"
+  rm -f "$zip"
+  xattr -dr com.apple.quarantine "$app" 2>/dev/null
+fi
+open "$app"
+for i in $(seq 20); do curl -s http://127.0.0.1:47823/status && break; sleep 1; done
+```
+
+No reply after 20 seconds: tell the user drawover did not start, and stop. On macOS, if the system says the app cannot be opened, tell the user to allow it once in System Settings > Privacy & Security > Open Anyway, then run `open "$HOME/Applications/drawover.app"` again.
 ## 2. Learn the drawing language (once per chat)
 
 Read [reference.md](reference.md) before your first drawing. It lists every line you can send and how to make drawings look good.
