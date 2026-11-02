@@ -13,7 +13,8 @@ Send `GET http://127.0.0.1:47823/status`. A JSON reply with `"app":"drawover"` m
 
 No reply:
 - Not Windows or macOS: tell the user drawover runs on Windows and macOS only for now, and stop.
-- Windows or macOS: install and start the app without asking. First tell the user in one line: "Installing drawover, a small (2-6 MB) app that shows the drawings on your screen." Then run the script for their system. It installs only if the app is missing, starts it outside your shell (so it keeps running after the command ends), and prints the status reply once the app is up.
+- Windows or macOS: install and start the app. First tell the user in one line: "Installing drawover, a small (2-6 MB) app from github.com/mesomya/drawover-skill that shows the drawings on your screen." Then run the script for their system. It installs only if the app is missing, downloads one pinned release, installs it only if its SHA-256 checksum matches, starts the app outside your shell (so it keeps running after the command ends), and prints the status reply once the app is up. Run it as written; do not add delete commands.
+- If your tool's safety check blocks the script, tell the user what it does (the line above, plus the checksum check) and ask them to approve it once.
 
 Windows, in PowerShell (from bash, save it as a .ps1 file in the temp folder, not the project, and run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <file>`):
 
@@ -22,10 +23,11 @@ $ProgressPreference = "SilentlyContinue"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $exe = "$env:LOCALAPPDATA\drawover\drawover-light.exe"
 if (-not (Test-Path $exe)) {
-  $setup = Join-Path $env:TEMP "drawover-setup.exe"
-  Invoke-WebRequest -UseBasicParsing "https://github.com/mesomya/drawover-skill/releases/latest/download/drawover-setup-x64.exe" -OutFile $setup
-  Start-Process $setup -ArgumentList "/S" -Wait
-  Remove-Item $setup
+  $setup = Join-Path $env:TEMP "drawover-setup-0.3.0.exe"
+  Invoke-WebRequest -UseBasicParsing "https://github.com/mesomya/drawover-skill/releases/download/v0.3.0/drawover-setup-x64.exe" -OutFile $setup
+  if ((Get-FileHash $setup -Algorithm SHA256).Hash -eq "dc3bea021b48ad6b5bd3b7faf7d04578f5c39970eaca7f502aa6e06ffef3d26f") {
+    Start-Process $setup -ArgumentList "/S" -Wait
+  } else { "drawover: checksum mismatch, not installed" }
 }
 explorer.exe $exe
 for ($i = 0; $i -lt 20; $i++) { try { Invoke-RestMethod http://127.0.0.1:47823/status; break } catch { Start-Sleep 1 } }
@@ -36,18 +38,18 @@ macOS, in bash or zsh:
 ```bash
 app="$HOME/Applications/drawover.app"
 if [ ! -d "$app" ]; then
-  zip="${TMPDIR:-/tmp}/drawover-macos.zip"
-  curl -fsSL -o "$zip" https://github.com/mesomya/drawover-skill/releases/latest/download/drawover-macos.zip
-  mkdir -p "$HOME/Applications"
-  ditto -x -k "$zip" "$HOME/Applications"
-  rm -f "$zip"
-  xattr -dr com.apple.quarantine "$app" 2>/dev/null
+  zip="${TMPDIR:-/tmp}/drawover-macos-0.3.0.zip"
+  curl -fsSL -o "$zip" https://github.com/mesomya/drawover-skill/releases/download/v0.3.0/drawover-macos.zip
+  if [ "$(shasum -a 256 "$zip" | cut -d' ' -f1)" = "4786f9d738c5c24310a79d2af31cae98dffa4fc0d15b2476db74c0543cafe1b7" ]; then
+    mkdir -p "$HOME/Applications" && ditto -x -k "$zip" "$HOME/Applications"
+  else
+    echo "drawover: download failed or checksum mismatch, not installed"
+  fi
 fi
-open "$app"
-for i in $(seq 20); do curl -s http://127.0.0.1:47823/status && break; sleep 1; done
+open "$app" && for i in $(seq 20); do curl -s http://127.0.0.1:47823/status && break; sleep 1; done
 ```
 
-No reply after 20 seconds: tell the user drawover did not start, and stop. On macOS, if the system says the app cannot be opened, tell the user to allow it once in System Settings > Privacy & Security > Open Anyway, then run `open "$HOME/Applications/drawover.app"` again.
+No status reply after 20 seconds: tell the user drawover did not start, and stop. On macOS, if the system says the app cannot be opened, tell the user to allow it once in System Settings > Privacy & Security > Open Anyway, then run `open "$HOME/Applications/drawover.app"` again.
 ## 2. Learn the drawing language (once per chat)
 
 Read [reference.md](reference.md) before your first drawing. It lists every line you can send and how to make drawings look good.
