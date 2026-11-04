@@ -7,10 +7,12 @@ Inspired by [Clicky](https://heyclicky.com), an AI buddy that sits next to your 
 ## Install
 
 ```
-npx skills add mesomya/drawover-skill
+npx skills add mesomya/drawover
 ```
 
-Or copy the `skills/drawover` folder into your agent's skills folder, for example `~/.agents/skills/` (Codex) or `~/.claude/skills/` (Claude Code).
+Or copy `SKILL.md` and the `references` folder into a `drawover` folder in your agent's skills folder, for example `~/.agents/skills/drawover` (Codex) or `~/.claude/skills/drawover` (Claude Code).
+
+The skill itself is [SKILL.md](SKILL.md); the full drawing language is in [references/reference.md](references/reference.md).
 
 ## Use
 
